@@ -25,6 +25,6 @@ class UserSchema(ma.Schema):
         fields = ("user_sys_id", "email", "password", "role", "isActive")
 
 
-userSchema = UserSchema()
-usersSchema = UserSchema(many=True)
+user_schema = UserSchema()
+users_schema = UserSchema(many=True)
 

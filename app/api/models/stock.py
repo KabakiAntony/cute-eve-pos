@@ -1,9 +1,10 @@
 import datetime
 from app.api.models import db, ma
 
+
 class Stocksdb(db.Model):
     """
-    Stocks model 
+    Stocks model
     """
     __tablename__ = "stocks"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -28,10 +29,9 @@ class Stocksdb(db.Model):
 class StockSchema(ma.Schema):
     class Meta:
         fields = (
-            "id", "item", "quantity",
-            "selling_price","creation_date", "update_date",
-            "created_by")
+            "id", "item", "quantity", "selling_price",
+            "creation_date", "update_date", "created_by")
 
 
-stockSchema = StockSchema()
-stocksSchema = StockSchema(many=True)
+stock_schema = StockSchema()
+stocks_schema = StockSchema(many=True)
