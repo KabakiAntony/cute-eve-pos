@@ -89,7 +89,7 @@ def token_required(f):
 
         try:
             data = jwt.decode(user_token, KEY, algorithm="HS256")
-            current_user = Users.query.filter_by(id=data['id']).first()
+            current_user = Users.query.filter_by(user_sys_id=data['id']).first()
             _data = user_schema.dump(current_user)
 
         except ExpiredSignatureError:
@@ -108,8 +108,31 @@ def token_required(f):
 
 def generate_id():
     """
-    Generate a unique user id for the user primary key.
+    generate a unique id for the system 
+    not the primary key user_sys_id
     """
     id = string.ascii_letters + string.digits
     id = "".join(random.choice(id) for i in range(10))
     return id
+
+
+def generate_random_password():
+    """
+    generate random password for users
+    signed up by admin, it is not used
+    anywhere by for maintaining data
+    sanity in the db
+    """
+    random_source = string.ascii_letters + string.digits + string.punctuation
+    password = random.choice(string.ascii_lowercase)
+    password += random.choice(string.ascii_uppercase)
+    password += random.choice(string.digits)
+    password += random.choice(string.punctuation)
+
+    for i in range(8):
+        password += random.choice(random_source)
+
+    password_list = list(password)
+    random.SystemRandom().shuffle(password_list)
+    password = "".join(password_list)
+    return password
