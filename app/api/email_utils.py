@@ -7,7 +7,7 @@ from sendgrid.helpers.mail import Mail
 def send_mail(user_email, the_subject, the_content):
     """send email on relevant user action"""
     message = Mail(
-        from_email=("kabaki.antony@gmail.com", "CuteEve WebAdmin"),
+        from_email=("kabaki.antony@gmail.com", "CuteEve Admin"),
         to_emails=user_email,
         subject=the_subject,
         html_content=the_content,
@@ -24,7 +24,7 @@ def send_mail(user_email, the_subject, the_content):
         )
 
 
-def verify_email_content():
+def activate_email_content():
     """
     Email content that goes into the  verification email
     on account creation.
@@ -32,10 +32,9 @@ def verify_email_content():
     content = """
     <br/>
     <br/>
-    Welcome, an account has been successfully created for you,
-    to start using the account please click on the confirm account,
-    button below and that will be it your account will be ready
-    for use.
+    Welcome, an account to use CuteEve Pos has been created for
+    you by the admin, however to start using the account you need
+    to activate it first by clicking activate account button below.
     <br/>
     Note this link will only be active for one hour. If expired,
     you have to request for a new one from the Admin.
@@ -53,7 +52,7 @@ def password_reset_content():
     You have received this email, because you requested<br/>
     a password reset link, Click on the reset button below to proceed,<br/>
     If you did not please ignore this email.<br/>
-    Note this link will only be active for thirty minutes.
+    This link will only be active for thirty minutes.
     <br/>
     <br/>
     """
