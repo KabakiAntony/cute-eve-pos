@@ -1,36 +1,30 @@
-import datetime
 from app.api.models import db, ma
 
 
-class Stocksdb(db.Model):
+class Stock(db.Model):
     """
     Stocks model
     """
-    __tablename__ = "stocks"
+    __tablename__ = "stock"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    item_sys_id = db.Column(db.String(25), unique=True, nullable=False)
     item = db.Column(db.String(255), unique=True, nullable=False)
     quantity = db.Column(db.Numeric, nullable=False)
-    # buying_price = db.Column(db.Float, nullable=False)
+    buying_price = db.Column(db.Float, nullable=False)
     selling_price = db.Column(db.Float, nullable=False)
-    creation_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    # update_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    created_by = db.Column(db.String(25), db.ForeignKey('Users.user_sys_id'))
-    # updated_by = db.Column(db.String(25), db.ForeignKey('Users.user_sys_id'))
 
-    def __init__(self, item, quantity, selling_price, created_by):
+    def __init__(self, item_syd, item, qty, bp, sp):
+        self.item_sys_id = item_syd
         self.item = item
-        self.quantity = quantity
-        # self.buying_price = buying_price
-        self.selling_price = selling_price
-        self.created_by = created_by
-        # self.updated_by = updated_by
+        self.quantity = qty
+        self.buying_price = bp
+        self.selling_price = sp
 
 
 class StockSchema(ma.Schema):
     class Meta:
         fields = (
-            "id", "item", "quantity", "selling_price",
-            "creation_date", "update_date", "created_by")
+            "item_sys_id" "item", "quantity", "buying_price" "selling_price")
 
 
 stock_schema = StockSchema()
