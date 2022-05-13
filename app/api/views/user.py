@@ -4,7 +4,7 @@ import datetime
 from app.api import users
 from app.api.models import db
 from flask import request, abort
-from app.api.models.users import Users, user_schema
+from app.api.models.user import User, user_schema
 from werkzeug.security import generate_password_hash
 from app.api.utils import (
     generate_random_password,
@@ -65,7 +65,7 @@ def create_user(user):
         isValidEmail(email)
         isValidPassword(password)
 
-        if Users.query.filter_by(email=email).first():
+        if User.query.filter_by(email=email).first():
             abort(
                 409,
                 """
@@ -76,7 +76,7 @@ def create_user(user):
             )
 
         sys_gen_id = generate_id()
-        new_user = Users(
+        new_user = User(
             user_sys_id=sys_gen_id, email=email, password=password, role=role)
         db.session.add(new_user)
         db.session.commit()
@@ -137,7 +137,7 @@ def user_signin():
         isValidEmail(email)
         isValidPassword(password)
 
-        user = Users.query.filter_by(email=email).first()
+        user = User.query.filter_by(email=email).first()
         if not user:
             abort(
                 404,
@@ -156,7 +156,7 @@ def user_signin():
                 or have the admin send you a new one.
                 """)
 
-        if not Users.compare_password(_password, password):
+        if not User.compare_password(_password, password):
             abort(
                 403,
                 "Email and or password is incorrect,\
@@ -203,7 +203,7 @@ def forgot_password():
 
         check_for_whitespace(user_data, ["email"])
         isValidEmail(email)
-        user = Users.query.filter_by(email=user_data["email"]).first()
+        user = User.query.filter_by(email=user_data["email"]).first()
         this_user = user_schema.dump(user)
 
         if user:
@@ -271,7 +271,7 @@ def update_password(user):
         isValidEmail(email)
         isValidPassword(new_password)
 
-        Users.query.filter_by(email=user["email"]).update(
+        User.query.filter_by(email=user["email"]).update(
             dict(password=f"{generate_password_hash(str(new_password))}")
         )
         db.session.commit()
@@ -301,7 +301,7 @@ def activate_user_account(user):
             "password": generate_password_hash(str(new_password)),
             "isActive": True
         }
-        Users.query.filter_by(
+        User.query.filter_by(
             email=user["email"]).update(account_activation_data)
         db.session.commit()
 

@@ -1,11 +1,11 @@
 from app.api.models import db, ma
 
 
-class Users(db.Model):
+class User(db.Model):
     """
     this is the user model
     """
-    __tablename__ = "Users"
+    __tablename__ = "User"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_sys_id = db.Column(db.String(25), unique=True, nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)

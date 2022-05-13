@@ -3,13 +3,31 @@ import re
 import jwt
 import random
 import string
+import pandas
+from pandas import read_excel
+from sqlalchemy import create_engine
 from functools import wraps
-from flask import jsonify, make_response, abort, request
-from app.api.models.users import Users, user_schema
+from flask import (
+    jsonify,
+    make_response,
+    abort, request,
+    current_app
+)
+from app.api.models import db
+from app.api.models.user import User, user_schema
+from app.api.models.action import Action
 from jwt import DecodeError, ExpiredSignatureError
 
 
 KEY = os.getenv("SECRET_KEY")
+DB_URL = os.environ.get("DATABASE_URL")
+ALLOWED_EXTENSIONS = os.environ.get('ALLOWED_EXTENSIONS')
+
+
+def allowed_file(filename):
+    """check for allowed extensions"""
+    return "." in filename and \
+        filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 def custom_make_response(key, message, status):
@@ -89,7 +107,8 @@ def token_required(f):
 
         try:
             data = jwt.decode(user_token, KEY, algorithm="HS256")
-            current_user = Users.query.filter_by(user_sys_id=data['id']).first()
+            current_user = User.query.filter_by(
+                user_sys_id=data['id']).first()
             _data = user_schema.dump(current_user)
 
         except ExpiredSignatureError:
@@ -136,3 +155,63 @@ def generate_random_password():
     random.SystemRandom().shuffle(password_list)
     password = "".join(password_list)
     return password
+
+
+def save_action_to_db(action_id, action, action_by):
+    """
+    this will be re used for all inserts or
+    updates to make sure that each action on the
+    system will be recorded on the action table
+    for future use or review.
+    """
+    try:
+        new_action = Action(
+            action_sys_id=action_id,
+            action=action,
+            action_by=action_by)
+        db.session.add(new_action)
+        db.session.commit()
+    except Exception as e:
+        return custom_make_response("error", f"{str(e)}", e.code)
+
+
+def convert_to_csv(file_path, upload_dir):
+    """convert excel file to csv"""
+    dataFile = read_excel(file_path, engine="openpyxl")
+    base_name = os.path.basename(file_path)
+    csv_file_name = os.path.splitext(base_name)[0]
+    new_upload_dir_path = os.path.join(current_app.root_path, upload_dir)
+    csv_file_path = new_upload_dir_path + csv_file_name + ".csv"
+    dataFile.to_csv(csv_file_path, index=False)
+    return csv_file_path
+
+
+def add_item_sys_id(csv_file, action_id):
+    """ adding a unique system id for an item """
+    data_file = pandas.read_csv(csv_file)
+    rows = data_file.count()[0]
+    data_file.insert(0, "id", "")
+    data_file.insert(1, "item_sys_id", "")
+    data_file.insert(2, "action_id", "")
+    for row in range(rows):
+        new_id = generate_id()
+        data_file.loc[row, "item_sys_id"] = new_id
+        data_file.loc[row, "action_id"] = action_id
+        row + 1
+
+    data_file.to_csv(csv_file, index=False)
+    data_file = pandas.read_csv(csv_file)
+
+
+def save_csv_to_db(csv_file, db_table):
+    """
+    Insert the contents of the csv file to
+    the database table.
+    """
+    engine = create_engine(DB_URL)
+    konnection = engine.raw_connection()
+    kursor = konnection.cursor()
+    with open(csv_file, "r") as f:
+        next(f)
+        kursor.copy_from(f, db_table, sep=",")
+    konnection.commit()

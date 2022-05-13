@@ -1,0 +1,8 @@
+This is just a place holder file it ensures that 
+this folder gets created on the remote repo and
+on heroku or rather it will be counted as part of the app slug
+but files that go in here get deleted at the close of business but 
+essentially they will have served their purpose, they are meant for 
+uploading stock information into the database.
+
+Having said that DO NOT DELETE THIS FILE
