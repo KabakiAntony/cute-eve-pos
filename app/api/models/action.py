@@ -9,12 +9,12 @@ class Action(db.Model):
     action_sys_id = db.Column(db.String(25), unique=True, nullable=False)
     action = db.Column(db.String(255),  nullable=False)
     time = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    by = db.Column(db.String(25), db.ForeignKey('Users.user_sys_id'))
+    by = db.Column(db.String(25), db.ForeignKey('User.user_sys_id'))
 
-    def __init__(self, a_sys_id, action, a_by):
-        self.action_sys_id = a_sys_id
+    def __init__(self, action_sys_id, action, action_by):
+        self.action_sys_id = action_sys_id
         self.action = action
-        self.by = a_by
+        self.by = action_by
 
 
 class ActionSchema(ma.Schema):
