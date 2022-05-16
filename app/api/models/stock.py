@@ -27,7 +27,7 @@ class StockSchema(ma.Schema):
     class Meta:
         fields = (
             "item_sys_id", "action_id", "item", "quantity", 
-            "buying_price" "selling_price")
+            "buying_price", "selling_price")
 
 
 stock_schema = StockSchema()

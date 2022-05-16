@@ -74,6 +74,7 @@ def get_all_stock(user):
 # or we can check the list on the frontend and if not
 # found then we check the db so it might stay
 @stocks.route('/stocks/<id>', methods=['GET'])
+@token_required
 def get_an_item(user, id):
     """ get a particular stock item """
     try:
