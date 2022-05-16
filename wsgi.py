@@ -1,16 +1,14 @@
 from app import create_app
-from flask import render_template
-
 
 app = create_app()
 
+
 @app.route('/')
 def root():
-    """ 
-        defining the root of our app
-     we need a way to create the admin account or 
-     check if it is created if it is not then we
-     create it.
+    """
+    this is the root of the api
+    later on we need to create a
+    root template for the api.
     """
 
     return "welcome to cute eve pos"
