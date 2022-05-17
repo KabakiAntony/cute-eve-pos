@@ -12,7 +12,7 @@ from app.api.utils import (
 )
 
 
-@sales.routes('/sales/record', methods=['POST'])
+@sales.route('/sales/record', methods=['POST'])
 @token_required
 def save_sale(user):
     """ record a particular sale into the database """
@@ -49,7 +49,7 @@ def save_sale(user):
         return custom_make_response("error", f"{str(e)}", e.code)
 
 
-@sales.routes('/sales/<user_id>', methods=['GET'])
+@sales.route('/sales/<user_id>', methods=['GET'])
 @token_required
 def get_particular_sale(user, user_id):
     """return sales by a particular person given their user_sys_id """
@@ -92,7 +92,7 @@ def get_particular_sale(user, user_id):
         return custom_make_response("error", f"{str(e)}", e.code)
 
 
-@sales.routes('/sales/<start_date>/<end_date>', method=['GET'])
+@sales.route('/sales/<start_date>/<end_date>', methods=['GET'])
 @token_required
 def get_sales_by_date(user, startDate, endDate):
     """ return sales given  start and end dates """
