@@ -1,4 +1,5 @@
 from app.api.models import db, ma
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 class User(db.Model):
@@ -18,6 +19,23 @@ class User(db.Model):
         self.email = email
         self.password = password
         self.role = role
+
+    def hash_password(self, password):
+        """
+        given a password string of any form or size
+        hash it in preparation for storage
+        """
+        password_hash = generate_password_hash(str(password))
+        return password_hash
+
+    def compare_password(hashed_password, password):
+        """
+        given a plain string password generate a hash
+        that will be used to compare with the stored
+        password in the database
+        """
+        return check_password_hash(hashed_password, str(password))
+
 
 
 class UserSchema(ma.Schema):
