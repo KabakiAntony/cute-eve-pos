@@ -28,6 +28,8 @@ from app.api.email_utils import (
 KEY = os.getenv("SECRET_KEY")
 ACTIVATE_ACCOUNT_URL = os.getenv("ACTIVATE_ACCOUNT_URL")
 PASSWORD_RESET_URL = os.getenv("PASSWORD_RESET_URL")
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
 
 
 @users.route('/users/create', methods=['POST'])
@@ -315,3 +317,35 @@ def activate_user_account(user):
         )
     except Exception as e:
         return custom_make_response("error", f"{str(e)}", e.code)
+
+
+@users.route('/admin')
+def create_admin():
+    """ 
+    create admin account, account is only
+    created if it does not exist
+    """
+    admin_user = User.query.filter_by(
+        email=ADMIN_EMAIL).filter_by(role="admin").first()
+    if admin_user:
+        abort(409, "An admin account already exists.")
+
+    # create account
+    admin_id = generate_id()
+    new_admin_user = User(
+        user_sys_id=admin_id, email=ADMIN_EMAIL,
+        password=ADMIN_PASSWORD, role='admin')
+    db.session.add(new_admin_user)
+    db.session.commit()
+
+    # activate account
+    User.query.filter_by(email=ADMIN_EMAIL).update(
+            dict(isActive=True)
+        )
+    db.session.commit()
+
+    return custom_make_response(
+        "data",
+        "Admin account created successfully",
+        201
+    )
