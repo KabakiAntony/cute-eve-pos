@@ -3,7 +3,7 @@ from app.api.models import db
 from flask import request, abort
 from app.api.models.sale import Sale
 from app.api.models.action import Action
-from app.api.models.stock import Stock, stock_schema
+from app.api.models.item import Item, item_schema
 from app.api.utils import (
     custom_make_response,
     token_required,
@@ -39,7 +39,7 @@ def save_sale(user):
             db.session.add(new_sale)
             db.session.commit()
 
-            update_stock(item_id, units)
+            update_items(item_id, units)
             
         return custom_make_response(
             "data",
@@ -55,9 +55,9 @@ def get_particular_sale(user, user_id):
     """return sales by a particular person given their user_sys_id """
     try:
         sale_data = (
-            db.session.query(Sale, Action, Stock)
+            db.session.query(Sale, Action, Item)
             .filter(Sale.sale_id == Action.action_sys_id)
-            .filter(Sale.item_id == Stock.item_id)
+            .filter(Sale.item_id == Item.item_id)
             .filter_by(by=user['user_sys_id'])
         )
 
@@ -98,9 +98,9 @@ def get_sales_by_date(user, startDate, endDate):
     """ return sales given  start and end dates """
     try:
         sale_data = (
-            db.session.query(Sale, Action, Stock)
+            db.session.query(Sale, Action, Item)
             .filter(Sale.sale_id == Action.action_sys_id)
-            .filter(Sale.item_id == Stock.item_id)
+            .filter(Sale.item_id == Item.item_id)
             .filter(Action.time.between(f'{startDate}', f'{endDate}'))
         )
 
@@ -135,16 +135,16 @@ def get_sales_by_date(user, startDate, endDate):
         return custom_make_response("error", f"{str(e)}", e.code)
 
 
-def update_stock(item_id, units_sold):
-    """ Update stocks after sale """
+def update_items(item_id, units_sold):
+    """ Update items after sale """
     try:
-        item = Stock.query.filter_by(item_sys_id=item_id).first()
-        serialized_item = stock_schema.dump(item)
+        item = Item.query.filter_by(item_sys_id=item_id).first()
+        serialized_item = item_schema.dump(item)
 
         units = serialized_item['units']
         new_units = units - units_sold
 
-        Stock.query.filter_by(item_sys_id=item_id).update(
+        Item.query.filter_by(item_sys_id=item_id).update(
             dict(quantity=new_units)
         )
         db.session.commit()
