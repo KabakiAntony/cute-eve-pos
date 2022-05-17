@@ -1,9 +1,9 @@
 from flask import Flask
 from config import ProductionConfig
 from flask_migrate import Migrate
-from app.api.views.sale import sales as sales_blueprint
-from app.api.views.stock import stocks as stocks_blueprint
 from app.api.views.user import users as users_blueprint
+from app.api.views.item import items as items_blueprint
+from app.api.views.sale import sales as sales_blueprint
 from flask_cors import CORS
 
 
@@ -21,9 +21,9 @@ def create_app():
     db.init_app(app)
     ma.init_app(app)
     migrate.init_app(app, db)
-    app.register_blueprint(sales_blueprint)
-    app.register_blueprint(stocks_blueprint)
     app.register_blueprint(users_blueprint)
+    app.register_blueprint(items_blueprint)
+    app.register_blueprint(sales_blueprint)
     app.app_context().push()
 
     return app

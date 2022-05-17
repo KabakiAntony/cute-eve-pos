@@ -7,11 +7,11 @@ class Sale(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     sale_id = db.Column(
         db.String(25),  db.ForeignKey('Action.action_sys_id'))
-    item_id = db.Column(db.Integer, db.ForeignKey('Stock.item_sys_id'))
+    item_id = db.Column(db.String(25), db.ForeignKey('Item.item_sys_id'))
     unit_price = db.Column(db.Float, nullable=False)
     units = db.Column(db.Numeric, nullable=False)
     total = db.Column(db.Float, nullable=False)
-
+    
     def __init__(self, sale_id, item_id, unit_price, units, total):
         self.sale_id = sale_id
         self.item_id = item_id

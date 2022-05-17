@@ -1,8 +1,8 @@
 import os
-from app.api import stocks
+from app.api import items
 from app.api.models import db
 from flask import request, current_app, abort
-from app.api.models.stock import Stock, stocks_schema, stock_schema
+from app.api.models.item import Item, items_schema, item_schema
 from werkzeug.utils import secure_filename
 from app.api.utils import (
     allowed_file,
@@ -16,31 +16,31 @@ from app.api.utils import (
 )
 
 
-STOCK_FILE_FOLDER = os.environ.get('STOCK_FOLDER')
+ITEM_FILE_FOLDER = os.environ.get('ITEM_FOLDER')
 
 
-@stocks.route('/stocks/upload', methods=['POST'])
+@items.route('/items/upload', methods=['POST'])
 @token_required
-def upload_stock(user):
+def upload_Item(user):
     """
-    upload new batch stock for 
+    upload new batch Item for 
     saving into the database 
     this will be procurement department
     """
-    receivedFile = request.files["newStockFile"]
+    receivedFile = request.files["newItemFile"]
     if receivedFile and allowed_file(receivedFile.filename):
         secureFilename = secure_filename(receivedFile.filename)
         filePath = os.path.join(
-            current_app.root_path, STOCK_FILE_FOLDER, secureFilename)
+            current_app.root_path, ITEM_FILE_FOLDER, secureFilename)
         receivedFile.save(filePath)
-        csvFile = convert_to_csv(filePath, STOCK_FILE_FOLDER)
+        csvFile = convert_to_csv(filePath, ITEM_FILE_FOLDER)
         action_id = generate_id()
         # add item sys id and action id to csv
         add_item_sys_id(csvFile, action_id)
         # save action to db
-        save_action_to_db(action_id, "Adding Stock", user['user_sys_id'])
-        # save stock csv to db
-        save_csv_to_db(csvFile, "public.'Stock'")
+        save_action_to_db(action_id, "Adding Item", user['user_sys_id'])
+        # save Item csv to db
+        save_csv_to_db(csvFile, "public.'Item'")
     return custom_make_response(
         "error",
         "Only excel files are allowed, select an excel file & try again.",
@@ -48,18 +48,18 @@ def upload_stock(user):
     )
 
 
-@stocks.route('/stocks', methods=['GET'])
+@items.route('/items', methods=['GET'])
 @token_required
-def get_all_stock(user):
-    """ get all stock items """
+def get_all_Item(user):
+    """ get all Item items """
     try:
-        items = Stock.query.all()
-        serialized_items = stocks_schema.dump(items)
+        items = Item.query.all()
+        serialized_items = items_schema.dump(items)
 
         if not items:
             abort(
                 404,
-                "You don't have any stock items, add some and try again."
+                "You don't have any Item items, add some and try again."
             )
         return custom_make_response("data", serialized_items, 200)
 
@@ -68,23 +68,23 @@ def get_all_stock(user):
 
 
 # this method might not be necessary since all
-# stock items are prefetched and hence on the frontend
+# Item items are prefetched and hence on the frontend
 # items will be returned from a list and if it is not
 # on the list then it is not on the database
 # or we can check the list on the frontend and if not
 # found then we check the db so it might stay
-@stocks.route('/stocks/<id>', methods=['GET'])
+@items.route('/Items/<id>', methods=['GET'])
 @token_required
 def get_an_item(user, id):
-    """ get a particular stock item """
+    """ get a particular Item item """
     try:
-        item = Stock.query.filter_by(item_sys_id=id).first()
-        serialized_item = stock_schema.dump(item)
+        item = Item.query.filter_by(item_sys_id=id).first()
+        serialized_item = item_schema.dump(item)
 
         if not item:
             abort(
                 404,
-                "You don't have the item in stock, add it and try again."
+                "You don't have the item in Item, add it and try again."
             )
         return custom_make_response("data", serialized_item, 200)
 
@@ -92,20 +92,20 @@ def get_an_item(user, id):
         return custom_make_response("error", f"{str(e)}", e.code)
 
 
-@stocks.route('/stocks/<id>', methods=['PATCH'])
+@items.route('/items/<id>', methods=['PATCH'])
 @token_required
-def update_stock(user, id):
+def update_Item(user, id):
     """
-    make changes to stock items
+    make changes to Item items
     """
     try:
-        stock_to_update = request.get_json()
-        item = Stock.query.filter_by(item_sys_id=id).first()
-        serialized_item = stock_schema.dump(item)
+        item_to_update = request.get_json()
+        item = Item.query.filter_by(item_sys_id=id).first()
+        serialized_item = item_schema.dump(item)
         if not item:
             abort(
                 404,
-                "The stock item you want to make changes to does exist."
+                "The Item item you want to make changes to does exist."
             )
 
         action_id = generate_id()
@@ -113,7 +113,7 @@ def update_stock(user, id):
         save_action_to_db(
             action_id, f"Updated {item_to_update}", user['user_sys_id'])
 
-        Stock.query.filter_by(item_sys_id=id).update(stock_to_update)
+        Item.query.filter_by(item_sys_id=id).update(item_to_update)
         db.session.commit()
 
         return custom_make_response(
@@ -126,20 +126,20 @@ def update_stock(user, id):
         return custom_make_response("error", f"{str(e)}", e.code)
 
 
-@stocks.route('/stocks/<id>', methods=['DELETE'])
+@items.route('/items/<id>', methods=['DELETE'])
 @token_required
-def remove_stock_item(user, id):
+def remove_Item_item(user, id):
     """
-    remove stock items completely from the database
+    remove Item items completely from the database
     """
     try:
-        item = Stock.query.filter_by(item_sys_id=id).first()
-        serialized_item = stock_schema.dump(item)
+        item = Item.query.filter_by(item_sys_id=id).first()
+        serialized_item = item_schema.dump(item)
 
         if not item:
             abort(
                 404,
-                "The stock item you are deleting does exist."
+                "The Item item you are deleting does exist."
             )
 
         action_id = generate_id()
@@ -147,11 +147,11 @@ def remove_stock_item(user, id):
         save_action_to_db(
             action_id, f"Removed {item_deleted}", user['user_sys_id'])
 
-        Stock.query.filter_by(item_sys_id=id).delete()
+        Item.query.filter_by(item_sys_id=id).delete()
         db.session.commit()
         return custom_make_response(
             "data",
-            f"{item_deleted}  successfully removed from stock.",
+            f"{item_deleted}  successfully removed from Item.",
             200
         )
 
