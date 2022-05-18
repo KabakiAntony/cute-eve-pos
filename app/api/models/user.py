@@ -17,7 +17,7 @@ class User(db.Model):
     def __init__(self, user_sys_id, email, password, role):
         self.user_sys_id = user_sys_id
         self.email = email
-        self.password = password
+        self.password = self.hash_password(password)
         self.role = role
 
     def hash_password(self, password):
