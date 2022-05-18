@@ -109,7 +109,7 @@ def create_user(user):
                 "message":
                 f"An account for {email.split('@', 1)[0]} has been created successfully\
                     and an activation link sent to their email.",
-                # "tkn": token.decode('utf-8'),
+                "tkn": token.decode('utf-8'),
             }, 201
         )
 
@@ -157,7 +157,7 @@ def user_signin():
                 activation email in your inbox,
                 or have the admin send you a new one.
                 """)
-
+                
         if not User.compare_password(_password, password):
             abort(
                 403,
