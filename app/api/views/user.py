@@ -168,6 +168,7 @@ def user_signin():
             {
                 "id": _user["user_sys_id"],
                 "role": _user['role'],
+                "screen_name": email.split('@', 1)[0],
                 "exp":
                 datetime.datetime.utcnow() + datetime.timedelta(minutes=480),
             },
@@ -180,7 +181,6 @@ def user_signin():
                 "message":
                 "Signed in successfully preparing your dashboard...",
                 "auth_token": token.decode('utf-8'),
-                "screen_name": email.split('@', 1)[0],
             }, 200
         )
         return response
@@ -248,61 +248,29 @@ def forgot_password():
 
 @users.route('/users/update', methods=['PATCH'])
 @token_required
-def update_password(user):
+def activate_user_account(user):
     """
-    Update or change the user password
-    :param user: a user object will be passed on from
-    the decoded token therefore you will be able to access
-    various user attributes an id and email uniquely identifying
-    the user and therefore updating their password accoringly
+    this activates the account for new users and also
+    updates the password incase the user had forgotten 
+    their password, does so by getting the origin from 
+    the frontend. Origin is eith new_account has not been
+    used before so its isActive state is false and the other
+    origin is forgot rather you want to reset your password.
     """
     try:
         user_data = request.get_json()
-
-        if ('email' or 'password') not in user_data.keys():
-            abort(
-               400,
-               """
-               Email and or password is missing,
-               please check and try again.
-               """)
-        email = user['email']
+        origin = user_data['origin']
         new_password = user_data['password']
 
-        check_for_whitespace(user_data, ["email", "password"])
-        isValidEmail(email)
-        isValidPassword(new_password)
-
-        User.query.filter_by(email=user["email"]).update(
-            dict(password=f"{generate_password_hash(str(new_password))}")
-        )
-        db.session.commit()
-
-        # add email sending on successful password change.
-        return custom_make_response(
-            "data",
-            "Your password has been changed successfully.",
-            200
-        )
-    except Exception as e:
-        return custom_make_response("error", f"{str(e)}", e.code)
-
-
-@users.route('/users/activate', methods=['PATCH'])
-@token_required
-def activate_user_account(user):
-    """
-    This activates user account by doing a number of things
-    sets a new password for the user, sets isactive status to
-    true for the user account and also ensures first and foremost
-    that the user being registered into the system is using real email.
-    """
-    try:
-        new_password = request.get_json()
+        if origin == "new_account":
+            account_activation_data = {
+                "password": generate_password_hash(str(new_password)),
+                "isActive": True
+            }
         account_activation_data = {
-            "password": generate_password_hash(str(new_password)),
-            "isActive": True
+            "password": generate_password_hash(str(new_password))
         }
+        
         User.query.filter_by(
             email=user["email"]).update(account_activation_data)
         db.session.commit()
@@ -310,8 +278,7 @@ def activate_user_account(user):
         return custom_make_response(
             "data",
             """
-            You have successfully activated your account, please
-            hold on as we take you to the login page.
+            Success, please hold on as we take you to the login page.
             """,
             200
         )
