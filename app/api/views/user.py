@@ -181,6 +181,7 @@ def user_signin():
                 "Signed in successfully preparing your dashboard...",
                 "auth_token": token.decode('utf-8'),
                 "screen_name": email.split('@', 1)[0],
+                "role": _user['role'],
             }, 200
         )
         return response
