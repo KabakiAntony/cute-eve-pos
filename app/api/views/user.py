@@ -168,6 +168,7 @@ def user_signin():
             {
                 "id": _user["user_sys_id"],
                 "role": _user['role'],
+                "screen_name": email.split('@', 1)[0],
                 "exp":
                 datetime.datetime.utcnow() + datetime.timedelta(minutes=480),
             },
@@ -180,8 +181,6 @@ def user_signin():
                 "message":
                 "Signed in successfully preparing your dashboard...",
                 "auth_token": token.decode('utf-8'),
-                "screen_name": email.split('@', 1)[0],
-                "role": _user['role'],
             }, 200
         )
         return response
@@ -269,7 +268,7 @@ def activate_user_account(user):
                 "isActive": True
             }
         account_activation_data = {
-            "password":generate_password_hash(str(new_password))
+            "password": generate_password_hash(str(new_password))
         }
         
         User.query.filter_by(
