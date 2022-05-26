@@ -281,7 +281,8 @@ def activate_user_account(user):
         return custom_make_response(
             "data",
             """
-            Success, please hold on as we take you to the login page.
+            Password saved successfully, please hold on\
+                 as we take you to the login page.
             """,
             200
         )
