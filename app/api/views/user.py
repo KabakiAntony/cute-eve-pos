@@ -107,7 +107,8 @@ def create_user(user):
             "data",
             {
                 "message":
-                f"An account for {email.split('@', 1)[0]} has been created successfully\
+                f"An account for <span>{email.split('@', 1)[0]}</span>\
+                    has been created successfully\
                     and an activation link sent to their email.",
                 "tkn": token.decode('utf-8'),
             }, 201
@@ -262,15 +263,17 @@ def activate_user_account(user):
         origin = user_data['origin']
         new_password = user_data['password']
 
-        if origin == "new_account":
+        if origin == "activate":
             account_activation_data = {
                 "password": generate_password_hash(str(new_password)),
                 "isActive": True
             }
-        account_activation_data = {
-            "password": generate_password_hash(str(new_password))
-        }
-        
+
+        if origin == "forgot":
+            account_activation_data = {
+                "password": generate_password_hash(str(new_password))
+            }
+
         User.query.filter_by(
             email=user["email"]).update(account_activation_data)
         db.session.commit()
