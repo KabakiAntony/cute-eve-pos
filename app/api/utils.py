@@ -20,7 +20,8 @@ from jwt import DecodeError, ExpiredSignatureError
 
 
 KEY = os.getenv("SECRET_KEY")
-DB_URL = os.environ.get("DATABASE_URL")
+DB_URL = os.environ.get("DATABASE_URL").replace(
+    'postgres://', 'postgresql://')
 ALLOWED_EXTENSIONS = os.environ.get('ALLOWED_EXTENSIONS')
 
 
@@ -190,7 +191,6 @@ def add_item_sys_id(csv_file, action_id):
     """ adding a unique system id for an item """
     data_file = pandas.read_csv(csv_file)
     rows = data_file.count()[0]
-    data_file.insert(0, "id", "")
     data_file.insert(1, "item_sys_id", "")
     data_file.insert(2, "action_id", "")
     for row in range(rows):
@@ -213,5 +213,6 @@ def save_csv_to_db(csv_file, db_table):
     kursor = konnection.cursor()
     with open(csv_file, "r") as f:
         next(f)
-        kursor.copy_from(f, db_table, sep=",")
+        kursor.copy_expert(f"COPY {db_table}(item,item_sys_id,action_id,\
+            units,buying_price,selling_price) FROM STDIN WITH DELIMITER','", f)
     konnection.commit()
