@@ -1,6 +1,11 @@
 import os
 from app.api import items
 from app.api.models import db
+from psycopg2.errors import (
+    UniqueViolation,
+    InvalidTextRepresentation,
+    BadCopyFileFormat
+ ) 
 from flask import request, current_app, abort
 from app.api.models.item import Item, items_schema, item_schema
 from werkzeug.utils import secure_filename
@@ -37,10 +42,45 @@ def upload_Item(user):
         action_id = generate_id()
         # add item sys id and action id to csv
         add_item_sys_id(csvFile, action_id)
-        # save action to db
-        save_action_to_db(action_id, "Adding Item", user['user_sys_id'])
-        # save Item csv to db
-        save_csv_to_db(csvFile, "public.'Item'")
+
+        try:
+            # save action to db
+            save_action_to_db(action_id, "Adding new items", user['user_sys_id'])
+
+            # save Item csv to db
+            save_csv_to_db(csvFile, 'public."Item"')
+
+            return custom_make_response(
+                "data",
+                "File uploaded successfully and  items saved to database.",
+                200
+            )
+        except UniqueViolation:
+            db.session.rollback()
+            return custom_make_response(
+                "error",
+                "Some of the items you are adding already exist,\
+                    remove them and try again.",
+                400
+            )
+        except InvalidTextRepresentation:
+            db.session.rollback()
+            return custom_make_response(
+                "error",
+                "Some of the columns in your file are empty, \
+                    check them and try again.",
+                400
+            )
+        except BadCopyFileFormat:
+            db.session.rollback()
+            return custom_make_response(
+                "error",
+                "Some of the data in the item column\
+                    contains commas remove them and try\
+                        again",
+                400
+            )
+
     return custom_make_response(
         "error",
         "Only excel files are allowed, select an excel file & try again.",
