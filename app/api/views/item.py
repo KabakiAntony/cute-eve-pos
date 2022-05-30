@@ -113,7 +113,7 @@ def get_all_Item(user):
 # on the list then it is not on the database
 # or we can check the list on the frontend and if not
 # found then we check the db so it might stay
-@items.route('/Items/<id>', methods=['GET'])
+@items.route('/items/<id>', methods=['GET'])
 @token_required
 def get_an_item(user, id):
     """ get a particular Item item """
@@ -149,16 +149,19 @@ def update_Item(user, id):
             )
 
         action_id = generate_id()
-        item_to_update = serialized_item['item']
+
         save_action_to_db(
-            action_id, f"Updated {item_to_update}", user['user_sys_id'])
+            action_id, f"Updated {serialized_item['item']}", user['user_sys_id'])
+
+        # append action_id to item_to_update
+        item_to_update['action_id'] = f"{action_id}"
 
         Item.query.filter_by(item_sys_id=id).update(item_to_update)
         db.session.commit()
 
         return custom_make_response(
             "data",
-            f"{item_to_update} update successful.",
+            f"{item_to_update['item']} updated successfully.",
             200
         )
 
