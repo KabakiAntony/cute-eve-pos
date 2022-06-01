@@ -18,9 +18,6 @@ def save_sale(user):
     """ record a particular sale into the database """
     try:
         sale = request.get_json()
-        if len(sale) == 0:
-            abort(400, "Sale data has not been saved well, try again.")
-
         action_id = generate_id()
         save_action_to_db(action_id, "Sale", user['user_sys_id'])
 
@@ -28,14 +25,18 @@ def save_sale(user):
         # add a sales id and insert
         # them into the sales table
         for i in range(len(sale)):
-            sale[i].update({'sale_id': f'{action_id}'})
+            item_id = sale[i]["item_sys_id"]
+            unit_price = sale[i]["selling_price"]
+            units = sale[i]["units"]
+            total = sale[i]["total"]
 
-            item_id = sale[i].item_id
-            units = sale[i].units
-
-            # this could be a source of an error
-            # but for now it just stays as is
-            new_sale = Sale(sale[i])
+            new_sale = Sale(
+                sale_id=action_id,
+                item_id=item_id,
+                unit_price=unit_price,
+                units=units,
+                total=total
+                )
             db.session.add(new_sale)
             db.session.commit()
 
@@ -43,7 +44,7 @@ def save_sale(user):
             
         return custom_make_response(
             "data",
-            "Sale recorded successfully", 200)
+            "Sale recorded successfully", 201)
 
     except Exception as e:
         return custom_make_response("error", f"{str(e)}", e.code)
@@ -145,7 +146,7 @@ def update_items(item_id, units_sold):
         new_units = units - units_sold
 
         Item.query.filter_by(item_sys_id=item_id).update(
-            dict(quantity=new_units)
+            dict(units=new_units)
         )
         db.session.commit()
 
