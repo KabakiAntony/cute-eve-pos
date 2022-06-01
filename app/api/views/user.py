@@ -107,7 +107,7 @@ def create_user(user):
             "data",
             {
                 "message":
-                f"An account for <span>{email.split('@', 1)[0]}</span>\
+                f"An account for {email.split('@', 1)[0]}\
                     has been created successfully\
                     and an activation link sent to their email.",
                 "tkn": token.decode('utf-8'),
