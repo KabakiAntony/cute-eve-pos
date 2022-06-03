@@ -1,3 +1,4 @@
+import datetime
 from app.api import sales
 from app.api.models import db
 from flask import request, abort
@@ -50,16 +51,20 @@ def save_sale(user):
         return custom_make_response("error", f"{str(e)}", e.code)
 
 
-@sales.route('/sales/<user_id>', methods=['GET'])
+@sales.route('/sales', methods=['GET'])
 @token_required
-def get_particular_sale(user, user_id):
+def get_particular_sale(user):
     """return sales by a particular person given their user_sys_id """
     try:
+        start_date = datetime.datetime.now().strftime("%m/%d/%Y, 00:00:00")
+        end_date = datetime.datetime.now().strftime("%m/%d/%Y, 23:59:59")
         sale_data = (
             db.session.query(Sale, Action, Item)
             .filter(Sale.sale_id == Action.action_sys_id)
-            .filter(Sale.item_id == Item.item_id)
-            .filter_by(by=user['user_sys_id'])
+            .filter(Sale.item_id == Item.item_sys_id)
+            .filter(Action.by == user['user_sys_id'])
+            .filter(Action.time.between(start_date, end_date))
+            .all()
         )
 
         if not sale_data:
@@ -70,23 +75,23 @@ def get_particular_sale(user, user_id):
             # return all fields but we will
             # we will leave all relevant fields later
             result_format = {
-                "item_id": result[0].item_id,
-                "sale_id": result[0].sale_id,
+                # "item_id": result[0].item_id,
+                # "sale_id": result[0].sale_id,
                 "unit_price": result[0].unit_price,
-                "units": result[0].units,
+                "units_sold": float(result[0].units),
                 "total": result[0].total,
-                "action_sys_id": result[1].action_sys_id,
-                "action": result[1].action,
+                # "action_sys_id": result[1].action_sys_id,
+                # "action": result[1].action,
                 "time": result[1].time.strftime("%m/%d/%Y, %H:%M:%S"),
-                "by": result[1].by,
-                "item_sys_id": result[2].item_sys_id,
-                "action_id": result[2].action_id,
+                # "by": result[1].by,
+                # "item_sys_id": result[2].item_sys_id,
+                # "action_id": result[2].action_id,
                 "item": result[2].item,
-                "quantity": result[2].quantity,
-                "buying_price": result[2].buying_price,
-                "selling_price": result[2].selling_price,
+                # "buying_price": result[2].buying_price,
+                # "selling_price": result[2].selling_price,
             }
             sale_list.append(result_format)
+        print(sale_list)
         return custom_make_response("data", sale_list, 200)
 
     except Exception as e:
