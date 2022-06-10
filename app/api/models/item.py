@@ -10,7 +10,7 @@ class Item(db.Model):
     item_sys_id = db.Column(db.String(25), unique=True, nullable=False)
     action_id = db.Column(db.String(25), db.ForeignKey('Action.action_sys_id'))
     item = db.Column(db.String(255), unique=True, nullable=False)
-    units = db.Column(db.Numeric, nullable=False)
+    units = db.Column(db.Float, nullable=False)
     buying_price = db.Column(db.Float, nullable=False)
     selling_price = db.Column(db.Float, nullable=False)
     children = db.relationship("Sale")

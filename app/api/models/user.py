@@ -37,7 +37,6 @@ class User(db.Model):
         return check_password_hash(hashed_password, str(password))
 
 
-
 class UserSchema(ma.Schema):
     class Meta:
         fields = ("user_sys_id", "email", "password", "role", "isActive")

@@ -4,6 +4,8 @@ import jwt
 import random
 import string
 import pandas
+from datetime import datetime
+from pytz import timezone
 from pandas import read_excel
 from sqlalchemy import create_engine
 from functools import wraps
@@ -166,9 +168,11 @@ def save_action_to_db(action_id, action, action_by):
     for future use or review.
     """
     try:
+        todays_date = africa_nairobi_date_now()
         new_action = Action(
             action_sys_id=action_id,
             action=action,
+            action_date=todays_date,
             action_by=action_by)
         db.session.add(new_action)
         db.session.commit()
@@ -216,3 +220,15 @@ def save_csv_to_db(csv_file, db_table):
         kursor.copy_expert(f"COPY {db_table}(item,item_sys_id,action_id,\
             units,buying_price,selling_price) FROM STDIN WITH DELIMITER','", f)
     konnection.commit()
+
+
+def africa_nairobi_date_now():
+    """ this app needs to save dates in EAT"""
+    # format = "%Y/%m/%d %H:%M:%S"
+
+    now_utc = datetime.now(timezone('UTC'))
+
+    now_nairobi = now_utc.astimezone(timezone('Africa/Nairobi'))
+
+    now_nairobi_date = now_nairobi.date()
+    return now_nairobi_date

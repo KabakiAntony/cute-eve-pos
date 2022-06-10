@@ -9,7 +9,7 @@ class Sale(db.Model):
         db.String(25),  db.ForeignKey('Action.action_sys_id'))
     item_id = db.Column(db.String(25), db.ForeignKey('Item.item_sys_id'))
     unit_price = db.Column(db.Float, nullable=False)
-    units = db.Column(db.Numeric, nullable=False)
+    units = db.Column(db.Float, nullable=False)
     total = db.Column(db.Float, nullable=False)
     
     def __init__(self, sale_id, item_id, unit_price, units, total):
