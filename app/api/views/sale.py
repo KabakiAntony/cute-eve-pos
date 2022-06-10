@@ -91,7 +91,6 @@ def get_particular_sale(user):
                 # "selling_price": result[2].selling_price,
             }
             sale_list.append(result_format)
-        print(sale_list)
         return custom_make_response("data", sale_list, 200)
 
     except Exception as e:
@@ -147,7 +146,7 @@ def update_items(item_id, units_sold):
         item = Item.query.filter_by(item_sys_id=item_id).first()
         serialized_item = item_schema.dump(item)
 
-        units = serialized_item['units']
+        units = float(serialized_item['units'])
         new_units = units - units_sold
 
         Item.query.filter_by(item_sys_id=item_id).update(
