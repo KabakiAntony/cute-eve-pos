@@ -1,4 +1,3 @@
-import datetime
 from app.api import sales
 from app.api.models import db
 from flask import request, abort
@@ -9,7 +8,8 @@ from app.api.utils import (
     custom_make_response,
     token_required,
     generate_id,
-    save_action_to_db
+    save_action_to_db,
+    africa_nairobi_date_now
 )
 
 
@@ -56,14 +56,13 @@ def save_sale(user):
 def get_particular_sale(user):
     """return sales by a particular person given their user_sys_id """
     try:
-        start_date = datetime.datetime.now().strftime("%m/%d/%Y, 00:00:00")
-        end_date = datetime.datetime.now().strftime("%m/%d/%Y, 23:59:59")
+        todays_date = africa_nairobi_date_now()
         sale_data = (
             db.session.query(Sale, Action, Item)
             .filter(Sale.sale_id == Action.action_sys_id)
             .filter(Sale.item_id == Item.item_sys_id)
             .filter(Action.by == user['user_sys_id'])
-            .filter(Action.time.between(start_date, end_date))
+            .filter(Action.action_date == todays_date)
             .all()
         )
 
@@ -78,11 +77,11 @@ def get_particular_sale(user):
                 # "item_id": result[0].item_id,
                 # "sale_id": result[0].sale_id,
                 "unit_price": result[0].unit_price,
-                "units_sold": float(result[0].units),
+                "units_sold": result[0].units,
                 "total": result[0].total,
                 # "action_sys_id": result[1].action_sys_id,
                 # "action": result[1].action,
-                "time": result[1].time.strftime("%m/%d/%Y, %H:%M:%S"),
+                "time": result[1].action_date,
                 # "by": result[1].by,
                 # "item_sys_id": result[2].item_sys_id,
                 # "action_id": result[2].action_id,
@@ -106,7 +105,7 @@ def get_sales_by_date(user, startDate, endDate):
             db.session.query(Sale, Action, Item)
             .filter(Sale.sale_id == Action.action_sys_id)
             .filter(Sale.item_id == Item.item_id)
-            .filter(Action.time.between(f'{startDate}', f'{endDate}'))
+            .filter(Action.action_date.between(f'{startDate}', f'{endDate}'))
         )
 
         if not sale_data:
