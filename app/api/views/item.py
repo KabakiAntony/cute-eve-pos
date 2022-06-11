@@ -226,9 +226,9 @@ def restore_data():
         kursor = konnection.cursor()
         with open(filePath, "r") as f:
             next(f)
-            kursor.copy_expert(f"COPY public.'User'(user_sys_id,email,password,\
+            kursor.copy_expert("COPY public.'User'(user_sys_id,email,password,\
                 role,isActive) FROM STDIN WITH DELIMITER','", f)
         konnection.commit()
     except Exception as e:
-        print(e,"the following error occurred.")
-        return custom_make_response("error", f"{str(e)}", e.code)
+        print(e, "the following error occurred.")
+        return custom_make_response("error", f"{str(e)}", 400)
