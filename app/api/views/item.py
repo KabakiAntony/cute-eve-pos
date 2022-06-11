@@ -221,14 +221,14 @@ def restore_data():
     try:
         # restore data to the different tables and 
         # change this accordingly
-        table_name = 'public."Item"'
+        table_name = 'public."Sale"'
         engine = create_engine(DB_URL)
         konnection = engine.raw_connection()
         kursor = konnection.cursor()
         with open(filePath, "r") as f:
             next(f)
-            kursor.copy_expert(f"COPY {table_name}(item_sys_id,action_id,item,\
-                units,buying_price,selling_price) FROM STDIN WITH DELIMITER','", f)
+            kursor.copy_expert(f"COPY {table_name}(sale_id,item_id,unit_price,\
+                units,total) FROM STDIN WITH DELIMITER','", f)
         konnection.commit()
         return custom_make_response("data", "data restored successfully", 200)
     except Exception as e:
