@@ -228,7 +228,7 @@ def restore_data():
         with open(filePath, "r") as f:
             next(f)
             kursor.copy_expert(f"COPY {table_name}(user_sys_id,email,password,\
-                role,isActive) FROM STDIN WITH DELIMITER','", f)
+                role) FROM STDIN WITH DELIMITER','", f)
         konnection.commit()
     except Exception as e:
         print(e, "the following error occurred.")
