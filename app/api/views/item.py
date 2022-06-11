@@ -1,6 +1,8 @@
 import os
 from app.api import items
 from app.api.models import db
+# remove this import once done
+from sqlalchemy import create_engine
 from psycopg2.errors import (
     UniqueViolation,
     InvalidTextRepresentation,
@@ -22,6 +24,9 @@ from app.api.utils import (
 
 
 ITEM_FILE_FOLDER = os.environ.get('ITEM_FOLDER')
+RESTORE_FILE_FOLDER = os.environ.get('RESTORE_FOLDER')
+DB_URL = os.environ.get("DATABASE_URL").replace(
+    'postgres://', 'postgresql://')
 
 
 @items.route('/items/upload', methods=['POST'])
@@ -199,4 +204,31 @@ def remove_Item_item(user, id):
         )
 
     except Exception as e:
+        return custom_make_response("error", f"{str(e)}", e.code)
+
+
+# a method that will be used to restore all items on the database
+# it will take csv files
+@items.route('/restore', methods=['POST'])
+def restore_data():
+    """ restore all data into the database"""
+    receivedFile = request.files["restoredCsv"]
+    if receivedFile:
+        secureFilename = secure_filename(receivedFile.filename)
+        filePath = os.path.join(
+            current_app.root_path, RESTORE_FILE_FOLDER, secureFilename)
+        receivedFile.save(filePath)
+    try:
+        # restore data to the different tables and 
+        # change this accordingly
+        engine = create_engine(DB_URL)
+        konnection = engine.raw_connection()
+        kursor = konnection.cursor()
+        with open(filePath, "r") as f:
+            next(f)
+            kursor.copy_expert(f"COPY public.'User'(user_sys_id,email,password,\
+                role,isActive) FROM STDIN WITH DELIMITER','", f)
+        konnection.commit()
+    except Exception as e:
+        print(e,"the following error occurred.")
         return custom_make_response("error", f"{str(e)}", e.code)
