@@ -1,8 +1,6 @@
 import os
 from app.api import items
 from app.api.models import db
-# remove this import once done
-from sqlalchemy import create_engine
 from psycopg2.errors import (
     UniqueViolation,
     InvalidTextRepresentation,
@@ -24,9 +22,6 @@ from app.api.utils import (
 
 
 ITEM_FILE_FOLDER = os.environ.get('ITEM_FOLDER')
-RESTORE_FILE_FOLDER = os.environ.get('RESTORE_FOLDER')
-DB_URL = os.environ.get("DATABASE_URL").replace(
-    'postgres://', 'postgresql://')
 
 
 @items.route('/items/upload', methods=['POST'])
@@ -50,7 +45,8 @@ def upload_Item(user):
 
         try:
             # save action to db
-            save_action_to_db(action_id, "Adding new items", user['user_sys_id'])
+            save_action_to_db(
+                action_id, "Adding new items", user['user_sys_id'])
 
             # save Item csv to db
             save_csv_to_db(csvFile, 'public."Item"')
@@ -156,7 +152,8 @@ def update_Item(user, id):
         action_id = generate_id()
 
         save_action_to_db(
-            action_id, f"Updated {serialized_item['item']}", user['user_sys_id'])
+            action_id, f"Updated {serialized_item['item']}",
+            user['user_sys_id'])
 
         # append action_id to item_to_update
         item_to_update['action_id'] = f"{action_id}"
@@ -205,32 +202,3 @@ def remove_Item_item(user, id):
 
     except Exception as e:
         return custom_make_response("error", f"{str(e)}", e.code)
-
-
-# a method that will be used to restore all items on the database
-# it will take csv files
-@items.route('/restore', methods=['POST'])
-def restore_data():
-    """ restore all data into the database"""
-    receivedFile = request.files["restoredCsv"]
-    if receivedFile:
-        secureFilename = secure_filename(receivedFile.filename)
-        filePath = os.path.join(
-            current_app.root_path, RESTORE_FILE_FOLDER, secureFilename)
-        receivedFile.save(filePath)
-    try:
-        # restore data to the different tables and 
-        # change this accordingly
-        table_name = 'public."Sale"'
-        engine = create_engine(DB_URL)
-        konnection = engine.raw_connection()
-        kursor = konnection.cursor()
-        with open(filePath, "r") as f:
-            next(f)
-            kursor.copy_expert(f"COPY {table_name}(sale_id,item_id,unit_price,\
-                units,total) FROM STDIN WITH DELIMITER','", f)
-        konnection.commit()
-        return custom_make_response("data", "data restored successfully", 200)
-    except Exception as e:
-        print(e, "the following error occurred.")
-        return custom_make_response("error", f"{str(e)}", 400)
