@@ -221,12 +221,13 @@ def restore_data():
     try:
         # restore data to the different tables and 
         # change this accordingly
+        table_name = 'public."User"'
         engine = create_engine(DB_URL)
         konnection = engine.raw_connection()
         kursor = konnection.cursor()
         with open(filePath, "r") as f:
             next(f)
-            kursor.copy_expert("COPY public.'User'(user_sys_id,email,password,\
+            kursor.copy_expert(f"COPY {table_name}(user_sys_id,email,password,\
                 role,isActive) FROM STDIN WITH DELIMITER','", f)
         konnection.commit()
     except Exception as e:
