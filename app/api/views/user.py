@@ -320,3 +320,19 @@ def create_admin():
         "Admin account created successfully",
         201
     )
+
+
+# a method that will be used to restore all items on the database
+# it will take csv files
+@users.route('/restore', methods=['PATCH'])
+def restore_data():
+    """ restore all data into the database"""
+    try:
+        User.query.update(
+            dict(isActive=True)
+        )
+        db.session.commit()
+        
+        return custom_make_response("data", "data restored successfully", 200)
+    except Exception as e:
+        return custom_make_response("error", f"{str(e)}", 400)
