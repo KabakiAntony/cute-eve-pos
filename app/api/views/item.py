@@ -230,6 +230,7 @@ def restore_data():
             kursor.copy_expert(f"COPY {table_name}(user_sys_id,email,password,\
                 role) FROM STDIN WITH DELIMITER','", f)
         konnection.commit()
+        return custom_make_response("data", "data restored successfully", 200)
     except Exception as e:
         print(e, "the following error occurred.")
         return custom_make_response("error", f"{str(e)}", 400)
