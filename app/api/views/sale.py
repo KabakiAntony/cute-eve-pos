@@ -71,23 +71,12 @@ def get_particular_sale(user):
 
         sale_list = []
         for result in sale_data:
-            # return all fields but we will
-            # we will leave all relevant fields later
             result_format = {
-                # "item_id": result[0].item_id,
-                # "sale_id": result[0].sale_id,
                 "unit_price": result[0].unit_price,
                 "units_sold": result[0].units,
                 "total": result[0].total,
-                # "action_sys_id": result[1].action_sys_id,
-                # "action": result[1].action,
-                "time": result[1].action_date,
-                # "by": result[1].by,
-                # "item_sys_id": result[2].item_sys_id,
-                # "action_id": result[2].action_id,
+                "date": result[1].action_date,
                 "item": result[2].item,
-                # "buying_price": result[2].buying_price,
-                # "selling_price": result[2].selling_price,
             }
             sale_list.append(result_format)
         return custom_make_response("data", sale_list, 200)
@@ -98,39 +87,29 @@ def get_particular_sale(user):
 
 @sales.route('/sales/<start_date>/<end_date>', methods=['GET'])
 @token_required
-def get_sales_by_date(user, startDate, endDate):
+def get_sales_by_date(user, start_date, end_date):
     """ return sales given  start and end dates """
     try:
-        sale_data = (
+        sale_data = (       
             db.session.query(Sale, Action, Item)
             .filter(Sale.sale_id == Action.action_sys_id)
-            .filter(Sale.item_id == Item.item_id)
-            .filter(Action.action_date.between(f'{startDate}', f'{endDate}'))
+            .filter(Sale.item_id == Item.item_sys_id)
+            .filter(Action.action_date.between(f'{start_date}', f'{end_date}'))
+            .all()
         )
 
         if not sale_data:
-            abort(404, "No sale data has been found for the user.")
+            abort(404, "No sales data has been found for the given dates,\
+                enter correct dates and try again.")
 
         sale_list = []
         for result in sale_data:
-            # return all fields but we will
-            # we will leave all relevant fields later
             result_format = {
-                "item_id": result[0].item_id,
-                "sale_id": result[0].sale_id,
                 "unit_price": result[0].unit_price,
-                "units": result[0].units,
+                "units_sold": result[0].units,
                 "total": result[0].total,
-                "action_sys_id": result[1].action_sys_id,
-                "action": result[1].action,
-                "time": result[1].time.strftime("%m/%d/%Y, %H:%M:%S"),
-                "by": result[1].by,
-                "item_sys_id": result[2].item_sys_id,
-                "action_id": result[2].action_id,
+                "date": result[1].action_date,
                 "item": result[2].item,
-                "quantity": result[2].quantity,
-                "buying_price": result[2].buying_price,
-                "selling_price": result[2].selling_price,
             }
             sale_list.append(result_format)
         return custom_make_response("data", sale_list, 200)
