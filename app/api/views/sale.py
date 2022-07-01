@@ -75,7 +75,7 @@ def get_particular_sale(user):
                 "unit_price": result[0].unit_price,
                 "units_sold": result[0].units,
                 "total": result[0].total,
-                "date": result[1].action_date,
+                # "date": result[1].action_date,
                 "item": result[2].item,
             }
             sale_list.append(result_format)
@@ -108,7 +108,7 @@ def get_sales_by_date(user, start_date, end_date):
                 "unit_price": result[0].unit_price,
                 "units_sold": result[0].units,
                 "total": result[0].total,
-                "date": result[1].action_date,
+                # "date": result[1].action_date,
                 "item": result[2].item,
             }
             sale_list.append(result_format)
