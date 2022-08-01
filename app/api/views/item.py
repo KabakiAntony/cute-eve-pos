@@ -232,17 +232,19 @@ def get_general_item_info_by_date(user, start_date, end_date):
             result_format = {
                 "a_item": result[2].item,
                 "b_units_in_stock": result[2].units,
-                "c_buying_price": result[2].buying_price,
-                "d_selling_price": result[0].unit_price,
+                "c_buying_price": result[0].buying_price,
+                "d_selling_price": (
+                    float(result[0].total) / float(result[0].units)),
                 "e_units_sold": result[0].units,
                 "f_total_sale": result[0].total,
                 "g_item_profit_margin": (
-                    float(result[0].unit_price) - float(result[2].buying_price)
+                    (float(result[0].total) / float(result[0].units))
+                    - float(result[0].buying_price)
                     ),
                 "h_total_profit_margin": (
-                    float(result[0].unit_price) * 
-                    (float(result[0].unit_price) - float(result[2].buying_price))
-                    )
+                    float(result[0].units) *
+                    ((float(result[0].total) / float(result[0].units))
+                    - float(result[0].buying_price)))
             }
             item_list.append(result_format)
         return custom_make_response("data", item_list, 200)
