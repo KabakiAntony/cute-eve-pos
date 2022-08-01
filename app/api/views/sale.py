@@ -27,14 +27,16 @@ def save_sale(user):
         # them into the sales table
         for i in range(len(sale)):
             item_id = sale[i]["item_sys_id"]
-            unit_price = sale[i]["selling_price"]
+            # unit_price = sale[i]["selling_price"]
+            buying_price = sale[i]['buying_price']
             units = sale[i]["units"]
             total = sale[i]["total"]
 
             new_sale = Sale(
                 sale_id=action_id,
                 item_id=item_id,
-                unit_price=unit_price,
+                # unit_price=unit_price,
+                buying_price=buying_price,
                 units=units,
                 total=total
                 )
@@ -72,7 +74,8 @@ def get_particular_sale(user):
         sale_list = []
         for result in sale_data:
             result_format = {
-                "unit_price": result[0].unit_price,
+                # "unit_price": result[0].unit_price,
+                "unit_price": float(result[0].total) / float(result[0].units),
                 "units_sold": result[0].units,
                 "total": result[0].total,
                 # "date": result[1].action_date,
@@ -105,7 +108,8 @@ def get_sales_by_date(user, start_date, end_date):
         sale_list = []
         for result in sale_data:
             result_format = {
-                "unit_price": result[0].unit_price,
+                # "unit_price": result[0].unit_price,
+                "unit_price": float(result[0].total) / float(result[0].units),
                 "units_sold": result[0].units,
                 "total": result[0].total,
                 # "date": result[1].action_date,
