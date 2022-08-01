@@ -8,6 +8,8 @@ from psycopg2.errors import (
  ) 
 from flask import request, current_app, abort
 from app.api.models.item import Item, items_schema, item_schema
+from app.api.models.sale import Sale
+from app.api.models.action import Action
 from werkzeug.utils import secure_filename
 from app.api.utils import (
     allowed_file,
@@ -200,5 +202,50 @@ def remove_Item_item(user, id):
             200
         )
 
+    except Exception as e:
+        return custom_make_response("error", f"{str(e)}", e.code)
+
+
+@items.route('/items/<start_date>/<end_date>', methods=['GET'])
+@token_required
+def get_general_item_info_by_date(user, start_date, end_date):
+    """ 
+    get general item information by date, that is sales
+    data, and other information that is composite of the
+    primary item data.
+    """
+    try:
+        item_data = (       
+            db.session.query(Sale, Action, Item)
+            .filter(Sale.sale_id == Action.action_sys_id)
+            .filter(Sale.item_id == Item.item_sys_id)
+            .filter(Action.action_date.between(f'{start_date}', f'{end_date}'))
+            .all()
+        )
+
+        if not item_data:
+            abort(404, "No item data has been found for the given dates,\
+                enter correct dates and try again.")
+
+        item_list = []
+        for result in item_data:
+            result_format = {
+                "a_item": result[2].item,
+                "b_units_in_stock": result[2].units,
+                "c_buying_price": result[2].buying_price,
+                "d_selling_price": result[0].unit_price,
+                "e_units_sold": result[0].units,
+                "f_total_sale": result[0].total,
+                "g_item_profit_margin": (
+                    float(result[0].unit_price) - float(result[2].buying_price)
+                    ),
+                "h_total_profit_margin": (
+                    float(result[0].unit_price) * 
+                    (float(result[0].unit_price) - float(result[2].buying_price))
+                    )
+            }
+            item_list.append(result_format)
+        return custom_make_response("data", item_list, 200)
+        
     except Exception as e:
         return custom_make_response("error", f"{str(e)}", e.code)
