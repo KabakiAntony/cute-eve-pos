@@ -139,8 +139,3 @@ def update_items(item_id, units_sold):
     except Exception as e:
         return custom_make_response("error", f"{str(e)}", e.code)
 
-
-@sales.route('/sales/delete_sales')
-def delete_all_sale_records():
-    response = db.session.execute(text('delete from  public."Sale"'))
-    return f"OK {response}"
